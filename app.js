@@ -108,7 +108,8 @@ function updateTracker() {
     
     const now = new Date();
 
-    members.forEach(member => {
+    // --- NEU: Vor dem Zeichnen berechnen wir für jeden Spieler die Restzeit zum Sortieren ---
+    const membersWithTime = members.map(member => {
         try {
             const localTimeString = now.toLocaleString("en-US", { timeZone: member.zone });
             const localDate = new Date(localTimeString);
@@ -120,37 +121,49 @@ function updateTracker() {
                 resetDate.setDate(resetDate.getDate() + 1);
             }
 
+            // Differenz in Millisekunden
             const diffMs = resetDate - localDate;
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-            const isHotPhase = (diffHours === 0); 
-
-            let card = document.getElementById(`card-${member.id}`);
-            if (!card) {
-                card = document.createElement("div");
-                card.id = `card-${member.id}`;
-                listElement.appendChild(card);
-            }
-
-            card.className = `card ${isHotPhase ? 'warning' : ''}`;
-            
-            // Formatierung der verbleibenden Zeit je nach Sprache
-            const timeString = userLang === "de" ? `${diffHours} Std. ${diffMinutes} Min.` : `${diffHours}h ${diffMinutes}m`;
-
-            card.innerHTML = `
-                <button class="edit-btn" onclick="openEditModal('${member.id}')">${lang.editBtn}</button>
-                <h3>${member.name}</h3>
-                <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
-                <div class="time-info">${lang.localTime}: <strong>${localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", {hour: '2-digit', minute:'2-digit', hour12: userLang !== "de"})}</strong></div>
-                <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
-                <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
-                    ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
-                </div>
-            `;
+            return { member, localDate, diffMs };
         } catch (e) {
             console.error(e);
+            return { member, localDate: now, diffMs: 999999999 }; // Fehlerhafte Zeitzonen nach unten schieben
         }
+    });
+
+    // --- NEU: Sortieren! Geringste Restzeit (Hot Phase) kommt nach oben ---
+    membersWithTime.sort((a, b) => a.diffMs - b.diffMs);
+
+    // Jetzt zeichnen wir die Karten in der neuen, sortierten Reihenfolge
+    membersWithTime.forEach(({ member, localDate, diffMs }) => {
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        const isHotPhase = (diffHours === 0); 
+
+        // Karte holen oder neu erstellen
+        let card = document.getElementById(`card-${member.id}`);
+        if (!card) {
+            card = document.createElement("div");
+            card.id = `card-${member.id}`;
+        }
+        
+        // WICHTIG: Damit die Sortierung im Browser sichtbar wird, hängen wir das Element neu an
+        listElement.appendChild(card);
+
+        card.className = `card ${isHotPhase ? 'warning' : ''}`;
+        
+        const timeString = userLang === "de" ? `${diffHours} Std. ${diffMinutes} Min.` : `${diffHours}h ${diffMinutes}m`;
+
+        card.innerHTML = `
+            <button class="edit-btn" onclick="openEditModal('${member.id}')">${lang.editBtn}</button>
+            <h3>${member.name}</h3>
+            <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
+            <div class="time-info">${lang.localTime}: <strong>${localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", {hour: '2-digit', minute:'2-digit', hour12: userLang !== "de"})}</strong></div>
+            <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
+            <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
+                ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
+            </div>
+        `;
     });
 }
 
