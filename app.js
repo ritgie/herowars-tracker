@@ -23,7 +23,7 @@ const defaultMembers = [
     { id: "350290279", name: "sMarioo", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350290279" },
     { id: "350234201", name: "Tut", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350234201" },
     { id: "350316066", name: "Vanessa", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350316066" },
-    { id: "350246180", name: "Vira", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350246180" },
+    { id: "350246180", name: "Vira", zone: "Europe/Warsaw", country: "Polen", authHash: "hash-350246180" },
     { id: "350349949", name: "VooDoo", zone: "America/Chicago", country: "Texas", authHash: "hash-350349949" },
     { id: "350234840", name: "Vox", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350234840" },
     { id: "350354858", name: "Wth am I here", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350354858" },
