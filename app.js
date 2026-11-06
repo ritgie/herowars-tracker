@@ -10,7 +10,7 @@ const defaultMembers = [
     { id: "350291331", name: "Giannis", zone: "Europe/Athens", country: "Griechenland", authHash: "hash-350291331" },
     { id: "350293572", name: "Grim Cat", zone: "Europe/Moscow", country: "Russland", authHash: "hash-350293572" },
     { id: "353429821", name: "Gur", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-353429821" },
-    { id: "352309706", name: "ICQ", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-352309706" },
+    { id: "352309706", name: "ICQ", zone: "America/Santiago", country: "Chile", authHash: "hash-352309706" },
     { id: "350329640", name: "K E N N Y", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350329640" },
     { id: "350264276", name: "kacok", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350264276" },
     { id: "356574113", name: "Kieman", zone: "Europe/Vienna", country: "Österreich", authHash: "hash-356574113" },
