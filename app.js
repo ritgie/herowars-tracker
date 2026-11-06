@@ -152,18 +152,22 @@ function updateTracker() {
 
         card.className = `card ${isHotPhase ? 'warning' : ''}`;
         
-        const timeString = userLang === "de" ? `${diffHours} Std. ${diffMinutes} Min.` : `${diffHours}h ${diffMinutes}m`;
+        // Hier holen wir uns den Wochentag (z.B. "Fr.") und die Uhrzeit separat
+        const weekday = localDate.toLocaleDateString(userLang === "de" ? "de-DE" : "en-US", { weekday: 'short' });
+        const timePart = localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
 
         card.innerHTML = `
             <button class="edit-btn" onclick="openEditModal('${member.id}')">${lang.editBtn}</button>
             <h3>${member.name}</h3>
             <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
-            <div class="time-info">${lang.localTime}: <strong>${localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", {hour: '2-digit', minute:'2-digit', hour12: userLang !== "de"})}</strong></div>
+            <div class="time-info">${lang.localTime}: <strong>${weekday}, ${timePart}</strong></div>
             <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
             <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
                 ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
             </div>
         `;
+ 
+ 
     });
 }
 
