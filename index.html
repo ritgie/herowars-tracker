@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeroWars Arena Reset Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="main-title">HeroWars Arena Reset Tracker</h1>
+        <p id="main-subtitle" class="subtitle">Finger weg von Gildenmitgliedern in der roten Phase!</p>
+        
+        <div id="member-list" class="grid">
+            <!-- Hier werden die Mitglieder automatisch durch JavaScript eingefügt -->
+        </div>
+    </div>
+
+    <!-- Das Pop-up-Fenster zum Bearbeiten -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Mitglied bearbeiten</h2>
+            <p id="modal-security-info" style="color: #8a8ab0; font-size: 0.9em;"></p>
+            
+            <label id="label-pin" for="input-id">Deine Spieler-ID zur Bestätigung:</label>
+            <input type="text" id="input-id" placeholder="">
+            
+            <label id="label-country" for="select-country">Neues Land / Zeitzone wählen:</label>
+            <select id="select-country">
+                <option value="Asia/Bangkok|Thailand">Thailand</option>
+                <option value="Europe/Berlin|Deutschland / Germany">Deutschland / Germany</option>
+                <option value="Europe/Vienna|Österreich / Austria">Österreich / Austria</option>
+                <option value="Europe/London|England / UK">England / UK</option>
+                <option value="Europe/Kyiv|Ukraine">Ukraine</option>
+                <option value="Europe/Athens|Griechenland / Greece">Griechenland / Greece</option>
+                <option value="Asia/Manila|Philippinen / Philippines">Philippinen / Philippines</option>
+                <option value="Asia/Kuala_Lumpur|Malaysia">Malaysia</option>
+                <option value="Asia/Seoul|Sued-Korea / South Korea">Süd-Korea / South Korea</option>
+                <option value="Asia/Tokyo|Japan">Japan</option>
+                <option value="America/Chicago|Texas (USA)">Texas (USA)</option>
+            </select>
+            
+            <div class="modal-buttons">
+                <button id="btn-save" class="btn primary">Speichern</button>
+                <button id="btn-cancel" class="btn">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
