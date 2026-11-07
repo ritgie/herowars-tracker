@@ -30,7 +30,6 @@ const defaultMembers = [
     { id: "350227794", name: "xzshka", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350227794" }
 ];
 
-// 2. Das Übersetzungswörterbuch (Deutsch & Englisch als Fallback)
 const translations = {
     de: {
         title: "HeroWars Arena Reset Tracker",
@@ -68,7 +67,6 @@ const translations = {
     }
 };
 
-// Systemsprache ermitteln (wenn nicht 'de', dann standardmäßig 'en')
 const userLang = navigator.language.startsWith("de") ? "de" : "en";
 const lang = translations[userLang];
 
@@ -79,7 +77,6 @@ function generateHash(input) {
     return "hash-" + input.trim();
 }
 
-// Statische Oberflächentexte übersetzen
 function applyStaticTranslations() {
     document.getElementById("main-title").innerText = lang.title;
     document.getElementById("main-subtitle").innerText = lang.subtitle;
@@ -106,12 +103,11 @@ function updateTracker() {
     const listElement = document.getElementById("member-list");
     if (!listElement) return;
     
-    // Liste vor dem Neuzeichnen leeren, um Duplikate zu vermeiden
+    // Clear list to avoid duplication
     listElement.innerHTML = "";
     
     const now = new Date();
 
-    // --- Berechnung und Sortierung ---
     const membersWithTime = members.map(member => {
         try {
             const localTimeString = now.toLocaleString("en-US", { timeZone: member.zone });
@@ -124,7 +120,6 @@ function updateTracker() {
                 resetDate.setDate(resetDate.getDate() + 1);
             }
 
-            // Differenz in Millisekunden
             const diffMs = resetDate - localDate;
             return { member, localDate, diffMs };
         } catch (e) {
@@ -133,18 +128,15 @@ function updateTracker() {
         }
     });
 
-    // Sortieren: Geringste Restzeit (Hot Phase) nach oben
     membersWithTime.sort((a, b) => a.diffMs - b.diffMs);
 
-    // Karten zeichnen
     membersWithTime.forEach(({ member, localDate, diffMs }) => {
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
         const isHotPhase = (diffHours === 0); 
         
-        // timeString-Fehler behoben: Variable korrekt definiert
-        const timeString = `${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}`;
+        const timeString = `${diffHours} Std. ${diffMinutes} Min.`;
 
         let card = document.createElement("div");
         card.id = `card-${member.id}`;
@@ -152,14 +144,17 @@ function updateTracker() {
 
         card.className = `card ${isHotPhase ? 'warning' : ''}`;
         
-        const weekday = localDate.toLocaleDateString(userLang === "de" ? "de-DE" : "en-US", { weekday: 'short' });
-        const timePart = localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
+        const localeStr = userLang === "de" ? "de-DE" : "en-US";
+        
+        const weekday = localDate.toLocaleDateString(localeStr, { weekday: 'short' });
+        const datePart = localDate.toLocaleDateString(localeStr, { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const timePart = localDate.toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
 
         card.innerHTML = `
             <button class="edit-btn" onclick="openEditModal('${member.id}')">${lang.editBtn}</button>
             <h3>${member.name}</h3>
             <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
-            <div class="time-info">${lang.localTime}: <strong>${weekday}, ${timePart}</strong></div>
+            <div class="time-info">${lang.localTime}: <strong>${weekday} - ${datePart} - ${timePart}</strong></div>
             <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
             <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
                 ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
@@ -183,7 +178,7 @@ window.openEditModal = function(id) {
     
     const select = document.getElementById("select-country");
     for (let option of select.options) {
-        if (option.value.split('|')[0] === member.zone) {
+        if (option.value.startsWith(member.zone)) {
             select.value = option.value;
             break;
         }
@@ -209,13 +204,8 @@ document.getElementById("btn-save").addEventListener("click", () => {
         return;
     }
 
-    const selectElement = document.getElementById("select-country");
-    if (!selectElement || !selectElement.value) return;
-    
-    const selectValue = selectElement.value;
-    const parts = selectValue.split("|");
-    if (parts.length < 2) return;
-    const [zone, country] = parts;
+    const selectValue = document.getElementById("select-country").value;
+    const [zone, country] = selectValue.split("|");
 
     let saved = localStorage.getItem("hw_tracker_custom_zones");
     let customZones = saved ? JSON.parse(saved) : {};
@@ -229,7 +219,6 @@ document.getElementById("btn-save").addEventListener("click", () => {
     document.getElementById("edit-modal").style.display = "none";
 });
 
-// Start-Aufrufe
 applyStaticTranslations();
 loadSavedData();
 setInterval(updateTracker, 1000);
