@@ -106,9 +106,12 @@ function updateTracker() {
     const listElement = document.getElementById("member-list");
     if (!listElement) return;
     
+    // Liste vor dem Neuzeichnen leeren, um Duplikate zu vermeiden
+    listElement.innerHTML = "";
+    
     const now = new Date();
 
-    // --- NEU: Vor dem Zeichnen berechnen wir für jeden Spieler die Restzeit zum Sortieren ---
+    // --- Berechnung und Sortierung ---
     const membersWithTime = members.map(member => {
         try {
             const localTimeString = now.toLocaleString("en-US", { timeZone: member.zone });
@@ -126,39 +129,37 @@ function updateTracker() {
             return { member, localDate, diffMs };
         } catch (e) {
             console.error(e);
-            return { member, localDate: now, diffMs: 999999999 }; // Fehlerhafte Zeitzonen nach unten schieben
+            return { member, localDate: now, diffMs: 999999999 };
         }
     });
 
-    // --- NEU: Sortieren! Geringste Restzeit (Hot Phase) kommt nach oben ---
+    // Sortieren: Geringste Restzeit (Hot Phase) nach oben
     membersWithTime.sort((a, b) => a.diffMs - b.diffMs);
 
-    // Jetzt zeichnen wir die Karten in der neuen, sortierten Reihenfolge
+    // Karten zeichnen
     membersWithTime.forEach(({ member, localDate, diffMs }) => {
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
         const isHotPhase = (diffHours === 0); 
-
-        // Karte holen oder neu erstellen
-        let card = document.getElementById(`card-${member.id}`);
-        if (!card) {
-            card = document.createElement("div");
-            card.id = `card-${member.id}`;
-        }
         
-        // WICHTIG: Damit die Sortierung im Browser sichtbar wird, hängen wir das Element neu an
+        // timeString-Fehler behoben: Variable korrekt definiert
+        const timeString = `${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}`;
+
+        let card = document.createElement("div");
+        card.id = `card-${member.id}`;
         listElement.appendChild(card);
 
         card.className = `card ${isHotPhase ? 'warning' : ''}`;
         
-        const timeString = userLang === "de" ? `${diffHours} Std. ${diffMinutes} Min.` : `${diffHours}h ${diffMinutes}m`;
+        const weekday = localDate.toLocaleDateString(userLang === "de" ? "de-DE" : "en-US", { weekday: 'short' });
+        const timePart = localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
 
         card.innerHTML = `
             <button class="edit-btn" onclick="openEditModal('${member.id}')">${lang.editBtn}</button>
             <h3>${member.name}</h3>
             <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
-            <div class="time-info">${lang.localTime}: <strong>${localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", {hour: '2-digit', minute:'2-digit', hour12: userLang !== "de"})}</strong></div>
+            <div class="time-info">${lang.localTime}: <strong>${weekday}, ${timePart}</strong></div>
             <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
             <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
                 ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
@@ -173,7 +174,6 @@ window.openEditModal = function(id) {
 
     currentEditingMemberId = id;
     
-    // Modal-Texte dynamisch übersetzen
     document.getElementById("modal-title").innerText = userLang === "de" ? member.name + lang.modalTitle : lang.modalTitle + member.name;
     document.getElementById("modal-security-info").innerText = lang.modalSecurity;
     
@@ -183,7 +183,7 @@ window.openEditModal = function(id) {
     
     const select = document.getElementById("select-country");
     for (let option of select.options) {
-        if (option.value.startsWith(member.zone)) {
+        if (option.value.split('|')[0] === member.zone) {
             select.value = option.value;
             break;
         }
@@ -209,8 +209,13 @@ document.getElementById("btn-save").addEventListener("click", () => {
         return;
     }
 
-    const selectValue = document.getElementById("select-country").value;
-    const [zone, country] = selectValue.split("|");
+    const selectElement = document.getElementById("select-country");
+    if (!selectElement || !selectElement.value) return;
+    
+    const selectValue = selectElement.value;
+    const parts = selectValue.split("|");
+    if (parts.length < 2) return;
+    const [zone, country] = parts;
 
     let saved = localStorage.getItem("hw_tracker_custom_zones");
     let customZones = saved ? JSON.parse(saved) : {};
@@ -218,13 +223,13 @@ document.getElementById("btn-save").addEventListener("click", () => {
     customZones[currentEditingMemberId] = { zone, country };
     localStorage.setItem("hw_tracker_custom_zones", JSON.stringify(customZones));
 
-    loadSavedData(); // Lädt die Daten direkt neu in die Liste
+    loadSavedData();
     updateTracker();
 
     document.getElementById("edit-modal").style.display = "none";
 });
 
-// Start-Aufrufe (stehen ganz links am Rand)
+// Start-Aufrufe
 applyStaticTranslations();
 loadSavedData();
 setInterval(updateTracker, 1000);
