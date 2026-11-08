@@ -103,9 +103,12 @@ function updateTracker() {
     const listElement = document.getElementById("member-list");
     if (!listElement) return;
     
+    // Altes Layout leeren, damit gelöschte Mitglieder komplett verschwinden
+    listElement.innerHTML = "";
+    
     const now = new Date();
 
-    // --- NEU: Vor dem Zeichnen berechnen wir für jeden Spieler die Restzeit zum Sortieren ---
+    // Vor dem Zeichnen berechnen wir für jeden Spieler die Restzeit zum Sortieren
     const membersWithTime = members.map(member => {
         try {
             const localTimeString = now.toLocaleString("en-US", { timeZone: member.zone });
@@ -127,7 +130,7 @@ function updateTracker() {
         }
     });
 
-    // --- NEU: Sortieren! Geringste Restzeit (Hot Phase) kommt nach oben ---
+    // Sortieren! Geringste Restzeit (Hot Phase) kommt nach oben
     membersWithTime.sort((a, b) => a.diffMs - b.diffMs);
 
     // Jetzt zeichnen wir die Karten in der neuen, sortierten Reihenfolge
@@ -135,21 +138,20 @@ function updateTracker() {
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
+        // Hier erstellen wir den fehlenden timeString!
+        const timeString = `${diffHours}h ${diffMinutes}m`;
+
         const isHotPhase = (diffHours === 0); 
 
-        // Karte holen oder neu erstellen
-        let card = document.getElementById(`card-${member.id}`);
-        if (!card) {
-            card = document.createElement("div");
-            card.id = `card-${member.id}`;
-        }
+        // Karte neu erstellen
+        const card = document.createElement("div");
+        card.id = `card-${member.id}`;
         
-        // WICHTIG: Damit die Sortierung im Browser sichtbar wird, hängen wir das Element neu an
         listElement.appendChild(card);
 
         card.className = `card ${isHotPhase ? 'warning' : ''}`;
         
-        // Hier holen wir uns den Wochentag (z.B. "Fr.") und die Uhrzeit separat
+        // Wochentag und Uhrzeit ermitteln
         const weekday = localDate.toLocaleDateString(userLang === "de" ? "de-DE" : "en-US", { weekday: 'short' });
         const timePart = localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
 
@@ -163,8 +165,6 @@ function updateTracker() {
                 ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
             </div>
         `;
- 
- 
     });
 }
 
