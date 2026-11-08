@@ -3,7 +3,6 @@ const defaultMembers = [
     { id: "350334136", name: "Arican", zone: "Asia/Tokyo", country: "Japan", authHash: "hash-350334136" },
     { id: "350229387", name: "Babacan", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350229387" },
     { id: "350342532", name: "Bob", zone: "Europe/Berlin", country: "Europa", authHash: "hash-350342532" },
-    { id: "350354568", name: "Boxem", zone: "Europe/London", country: "England", authHash: "hash-350354568" },
     { id: "350305384", name: "Faezshura", zone: "Asia/Kuala_Lumpur", country: "Malaysia", authHash: "hash-350305384" },
     { id: "350316317", name: "Fern", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350316317" },
     { id: "354240626", name: "Friar Tuck", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-354240626" },
@@ -19,17 +18,16 @@ const defaultMembers = [
     { id: "352499542", name: "Losungchih", zone: "Asia/Seoul", country: "Sued-Korea", authHash: "hash-352499542" },
     { id: "350318894", name: "Nagami", zone: "Asia/Tokyo", country: "Japan", authHash: "hash-350318894" },
     { id: "350258418", name: "Rammstein", zone: "Asia/Bangkok", country: "Thailand", authHash: "hash-350258418" },
-    { id: "350345032", name: "RelaxSs", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350345032" },
     { id: "350290279", name: "sMarioo", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350290279" },
     { id: "350234201", name: "Tut", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350234201" },
     { id: "350316066", name: "Vanessa", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350316066" },
     { id: "350246180", name: "Vira", zone: "Europe/Warsaw", country: "Polen", authHash: "hash-350246180" },
     { id: "350349949", name: "VooDoo", zone: "America/Chicago", country: "Texas", authHash: "hash-350349949" },
     { id: "350234840", name: "Vox", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350234840" },
-    { id: "350354858", name: "Wth am I here", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350354858" },
     { id: "350227794", name: "xzshka", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350227794" }
 ];
 
+// 2. Das Übersetzungswörterbuch (Deutsch & Englisch als Fallback)
 const translations = {
     de: {
         title: "HeroWars Arena Reset Tracker",
@@ -67,6 +65,7 @@ const translations = {
     }
 };
 
+// Systemsprache ermitteln (wenn nicht 'de', dann standardmäßig 'en')
 const userLang = navigator.language.startsWith("de") ? "de" : "en";
 const lang = translations[userLang];
 
@@ -77,6 +76,7 @@ function generateHash(input) {
     return "hash-" + input.trim();
 }
 
+// Statische Oberflächentexte übersetzen
 function applyStaticTranslations() {
     document.getElementById("main-title").innerText = lang.title;
     document.getElementById("main-subtitle").innerText = lang.subtitle;
@@ -103,11 +103,9 @@ function updateTracker() {
     const listElement = document.getElementById("member-list");
     if (!listElement) return;
     
-    // Clear list to avoid duplication
-    listElement.innerHTML = "";
-    
     const now = new Date();
 
+    // --- NEU: Vor dem Zeichnen berechnen wir für jeden Spieler die Restzeit zum Sortieren ---
     const membersWithTime = members.map(member => {
         try {
             const localTimeString = now.toLocaleString("en-US", { timeZone: member.zone });
@@ -120,46 +118,53 @@ function updateTracker() {
                 resetDate.setDate(resetDate.getDate() + 1);
             }
 
+            // Differenz in Millisekunden
             const diffMs = resetDate - localDate;
             return { member, localDate, diffMs };
         } catch (e) {
             console.error(e);
-            return { member, localDate: now, diffMs: 999999999 };
+            return { member, localDate: now, diffMs: 999999999 }; // Fehlerhafte Zeitzonen nach unten schieben
         }
     });
 
+    // --- NEU: Sortieren! Geringste Restzeit (Hot Phase) kommt nach oben ---
     membersWithTime.sort((a, b) => a.diffMs - b.diffMs);
 
+    // Jetzt zeichnen wir die Karten in der neuen, sortierten Reihenfolge
     membersWithTime.forEach(({ member, localDate, diffMs }) => {
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
         const isHotPhase = (diffHours === 0); 
-        
-        const timeString = `${diffHours} Std. ${diffMinutes} Min.`;
 
-        let card = document.createElement("div");
-        card.id = `card-${member.id}`;
+        // Karte holen oder neu erstellen
+        let card = document.getElementById(`card-${member.id}`);
+        if (!card) {
+            card = document.createElement("div");
+            card.id = `card-${member.id}`;
+        }
+        
+        // WICHTIG: Damit die Sortierung im Browser sichtbar wird, hängen wir das Element neu an
         listElement.appendChild(card);
 
         card.className = `card ${isHotPhase ? 'warning' : ''}`;
         
-        const localeStr = userLang === "de" ? "de-DE" : "en-US";
-        
-        const weekday = localDate.toLocaleDateString(localeStr, { weekday: 'short' });
-        const datePart = localDate.toLocaleDateString(localeStr, { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const timePart = localDate.toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
+        // Hier holen wir uns den Wochentag (z.B. "Fr.") und die Uhrzeit separat
+        const weekday = localDate.toLocaleDateString(userLang === "de" ? "de-DE" : "en-US", { weekday: 'short' });
+        const timePart = localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
 
         card.innerHTML = `
             <button class="edit-btn" onclick="openEditModal('${member.id}')">${lang.editBtn}</button>
             <h3>${member.name}</h3>
             <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
-            <div class="time-info">${lang.localTime}: <strong>${weekday} - ${datePart} - ${timePart}</strong></div>
+            <div class="time-info">${lang.localTime}: <strong>${weekday}, ${timePart}</strong></div>
             <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
             <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
                 ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
             </div>
         `;
+ 
+ 
     });
 }
 
@@ -169,6 +174,7 @@ window.openEditModal = function(id) {
 
     currentEditingMemberId = id;
     
+    // Modal-Texte dynamisch übersetzen
     document.getElementById("modal-title").innerText = userLang === "de" ? member.name + lang.modalTitle : lang.modalTitle + member.name;
     document.getElementById("modal-security-info").innerText = lang.modalSecurity;
     
@@ -213,12 +219,13 @@ document.getElementById("btn-save").addEventListener("click", () => {
     customZones[currentEditingMemberId] = { zone, country };
     localStorage.setItem("hw_tracker_custom_zones", JSON.stringify(customZones));
 
-    loadSavedData();
+    loadSavedData(); // Lädt die Daten direkt neu in die Liste
     updateTracker();
 
     document.getElementById("edit-modal").style.display = "none";
 });
 
+// Start-Aufrufe (stehen ganz links am Rand)
 applyStaticTranslations();
 loadSavedData();
 setInterval(updateTracker, 1000);
