@@ -166,7 +166,7 @@ function updateTracker() {
             <h3>${member.name}</h3>
             <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
             <!-- Kompakte Schriftgröße und Umbruchschutz für die einzeilige Anzeige -->
-            <div class="time-info" style="font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${fullDateTimeString}</strong></div>
+            <div class="time-info" style="font-size: 0.85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${fullDateTimeString}</strong></div>
             <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
             <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
                 ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
