@@ -138,7 +138,7 @@ function updateTracker() {
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
-        // Hier erstellen wir den fehlenden timeString!
+        // Den timeString für den Reset-Countdown generieren
         const timeString = `${diffHours}h ${diffMinutes}m`;
 
         const isHotPhase = (diffHours === 0); 
@@ -151,15 +151,22 @@ function updateTracker() {
 
         card.className = `card ${isHotPhase ? 'warning' : ''}`;
         
-        // Wochentag und Uhrzeit ermitteln
-        const weekday = localDate.toLocaleDateString(userLang === "de" ? "de-DE" : "en-US", { weekday: 'short' });
-        const timePart = localDate.toLocaleTimeString(userLang === "de" ? "de-DE" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
+        // --- Datums- und Uhrzeitkomponenten einzeln für die Formatierung extrahieren ---
+        const currentLangTag = userLang === "de" ? "de-DE" : "en-US";
+        
+        const weekday = localDate.toLocaleDateString(currentLangTag, { weekday: 'short' });
+        const datePart = localDate.toLocaleDateString(currentLangTag, { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const timePart = localDate.toLocaleTimeString(currentLangTag, { hour: '2-digit', minute: '2-digit', hour12: userLang !== "de" });
+
+        // Zusammenbauen des Strings: Ortszeit: <Wochentag> - <Datum> - <Uhrzeit>
+        const fullDateTimeString = `${lang.localTime}: ${weekday} - ${datePart} - ${timePart}`;
 
         card.innerHTML = `
             <button class="edit-btn" onclick="openEditModal('${member.id}')">${lang.editBtn}</button>
             <h3>${member.name}</h3>
             <p style="margin: 0; font-size: 0.85em; color: #8a8ab0;">${member.country}</p>
-            <div class="time-info">${lang.localTime}: <strong>${weekday}, ${timePart}</strong></div>
+            <!-- Kompakte Schriftgröße und Umbruchschutz für die einzeilige Anzeige -->
+            <div class="time-info" style="font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${fullDateTimeString}</strong></div>
             <div class="time-info">${lang.resetIn}: <span class="countdown">${timeString}</span></div>
             <div class="status-text ${isHotPhase ? 'danger' : 'safe'}">
                 ${isHotPhase ? lang.dangerStatus : lang.safeStatus}
