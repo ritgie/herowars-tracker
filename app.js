@@ -3,6 +3,7 @@ const defaultMembers = [
     { id: "350334136", name: "Arican", zone: "Asia/Tokyo", country: "Japan", authHash: "hash-350334136" },
     { id: "350229387", name: "Babacan", zone: "Asia/Bangkok", country: "tbd (Standard)", authHash: "hash-350229387" },
     { id: "350342532", name: "Bob", zone: "Europe/Berlin", country: "Europa", authHash: "hash-350342532" },
+    { id: "350298099", name: "darkfireFR", zone: "Europe/Paris", country: "Europa", authHash: "hash-350298099" },
     { id: "350305384", name: "Faezshura", zone: "Asia/Kuala_Lumpur", country: "Malaysia", authHash: "hash-350305384" },
     { id: "350316317", name: "Fern", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-350316317" },
     { id: "354240626", name: "Friar Tuck", zone: "Europe/Kyiv", country: "Ukraine", authHash: "hash-354240626" },
